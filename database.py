@@ -185,7 +185,7 @@ def unlock_voter_session(student_id):
 
 def force_unlock_all_sessions():
     """Admin function: unlock all voter sessions."""
-    Voter.query.update({Voter.session_token: None, Voter.session_started_at: None})
+    Voter.query.update({'session_token': None, 'session_started_at': None})
     db.session.commit()
 
 def get_voter_progress(student_id):
@@ -198,9 +198,13 @@ def get_voter_progress(student_id):
 def get_next_post_for_voter(student_id):
     voted_post_ids, _ = get_voter_progress(student_id)
     # Get the first post ordered by order_index that the voter HAS NOT voted for
-    next_post = Post.query.filter(
-        ~Post.id.in_(voted_post_ids) if voted_post_ids else True
-    ).order_by(Post.order_index).first()
+    if voted_post_ids:
+        next_post = Post.query.filter(
+            ~Post.id.in_(voted_post_ids)
+        ).order_by(Post.order_index).first()
+    else:
+        # Voter hasn't voted for anything yet - return the very first post
+        next_post = Post.query.order_by(Post.order_index).first()
     return next_post
 
 def get_results_for_post(post_id):

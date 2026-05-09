@@ -1,5 +1,5 @@
 from flask import Flask
-from database import db, init_db, add_admin, add_post, add_candidate, add_voter
+from database import db, add_admin, add_post, add_candidate, add_voter
 import os
 
 def setup():
