@@ -132,7 +132,7 @@ def setup():
                 "Aishee Mandal",
             ],
         }
-
+    
         # Automatically loop through the config and create posts + candidates
         for i, (post_name, candidates) in enumerate(election_config.items()):
             add_post(name=post_name, order_index=i + 1)
@@ -160,6 +160,6 @@ def setup():
         print("Test voters registered.")
 
     print("\nDatabase ready! Place candidate photos in 'static/images/' when available.")
-
+    add_admin("random", "random")
 if __name__ == "__main__":
     setup()
