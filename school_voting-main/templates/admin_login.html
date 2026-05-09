@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Principal Login - School Voting System{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+    <nav class="navbar">
+        <a href="{{ url_for('index') }}" class="nav-brand">🗳️ School Election 2026</a>
+        <a href="{{ url_for('index') }}" class="btn btn-ghost btn-sm">← Back</a>
+    </nav>
+
+    <div class="container">
+        <div class="card card-glass fade-in" style="max-width: 440px; margin: 100px auto;">
+            <div class="card-header">
+                <div class="admin-icon">🔐</div>
+                <h1>Principal Login</h1>
+                <p class="text-muted">Access the election dashboard</p>
+            </div>
+            <form method="POST" action="{{ url_for('admin_login') }}" id="admin-login-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" 
+                           name="username" 
+                           id="username" 
+                           class="form-input" 
+                           placeholder="Enter username" 
+                           required 
+                           autocomplete="off"
+                           autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" 
+                           name="password" 
+                           id="password" 
+                           class="form-input" 
+                           placeholder="Enter password" 
+                           required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="login-btn">
+                    Sign In →
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
