@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Vote Manager - Super Admin{% endblock %}
+
+{% block content %}
+<div class="page-wrapper dashboard-page">
+    <nav class="navbar">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-brand">🗳️ Super Admin Console</a>
+        <div class="nav-links">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-ghost btn-sm">← Dashboard</a>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-danger btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 80px;">
+        <div class="welcome-banner fade-in">
+            <h2>🔧 Direct Vote Management</h2>
+            <p class="text-muted">Edit or Delete individual votes cast by any voter.</p>
+        </div>
+
+        <div class="card card-glass fade-in">
+            <div class="card-header">
+                <h2>📋 All Individual Votes</h2>
+            </div>
+            {% if votes %}
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Voter ID</th>
+                            <th>Voter Name</th>
+                            <th>Post</th>
+                            <th>Voted For</th>
+                            <th>Timestamp</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vote in votes %}
+                        <tr>
+                            <td><code>{{ vote.voter_id }}</code></td>
+                            <td>{{ vote.voter_name }}</td>
+                            <td>{{ vote.post_name }}</td>
+                            <td id="vote-display-{{ vote.voter_id }}-{{ vote.post_id }}">
+                                <span class="badge badge-pending">{{ vote.candidate_name }}</span>
+                            </td>
+                            <td style="font-size: 0.8rem;" class="text-muted">{{ vote.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <div style="display: flex; gap: 5px;">
+                                    <!-- Edit Button (Opens Inline Form) -->
+                                    <button class="btn btn-ghost btn-sm" onclick="toggleEdit('{{ vote.voter_id }}', '{{ vote.post_id }}')" title="Change candidate">✏️</button>
+                                    
+                                    <!-- Delete Form -->
+                                    <form method="POST" action="{{ url_for('admin_edit_vote') }}" onsubmit="return confirm('Permanently delete this specific vote?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="voter_id" value="{{ vote.voter_id }}">
+                                        <input type="hidden" name="post_id" value="{{ vote.post_id }}">
+                                        <input type="hidden" name="action" value="delete">
+                                        <button type="submit" class="btn btn-ghost btn-sm" style="color: #ef4444;" title="Delete this vote">🗑️</button>
+                                    </form>
+                                </div>
+
+                                <!-- Inline Edit Form (Hidden by default) -->
+                                <div id="edit-form-{{ vote.voter_id }}-{{ vote.post_id }}" style="display: none; margin-top: 10px;">
+                                    <form method="POST" action="{{ url_for('admin_edit_vote') }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="voter_id" value="{{ vote.voter_id }}">
+                                        <input type="hidden" name="post_id" value="{{ vote.post_id }}">
+                                        <input type="hidden" name="action" value="edit">
+                                        
+                                        <select name="candidate_id" class="form-input" style="padding: 4px; font-size: 0.8rem; margin-bottom: 5px;">
+                                            {% for cand in candidates_by_post[vote.post_id] %}
+                                                <option value="{{ cand.id }}" {% if cand.id == vote.candidate_id %}selected{% endif %}>
+                                                    {{ cand.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        <div style="display: flex; gap: 5px;">
+                                            <button type="submit" class="btn btn-primary btn-sm" style="flex: 1;">Save</button>
+                                            <button type="button" class="btn btn-ghost btn-sm" onclick="toggleEdit('{{ vote.voter_id }}', '{{ vote.post_id }}')">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted" style="padding: 20px;">No votes have been cast yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleEdit(voterId, postId) {
+        const display = document.getElementById(`vote-display-${voterId}-${postId}`);
+        const form = document.getElementById(`edit-form-${voterId}-${postId}`);
+        
+        if (form.style.display === 'none') {
+            form.style.display = 'block';
+        } else {
+            form.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

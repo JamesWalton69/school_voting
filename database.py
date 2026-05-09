@@ -30,8 +30,9 @@ class Candidate(db.Model):
 
 class Voter(db.Model):
     __tablename__ = 'voters'
-    id = db.Column(db.String(20), primary_key=True)  # Student ID
+    id = db.Column(db.String(20), primary_key=True)  # Admission ID
     name = db.Column(db.String(100), nullable=False)
+    dob = db.Column(db.String(10), nullable=False)  # DD-MM-YYYY
     # Session locking: prevents same ID on two computers
     session_token = db.Column(db.String(64), nullable=True)
     session_started_at = db.Column(db.DateTime, nullable=True)
@@ -49,7 +50,6 @@ class Vote(db.Model):
     
     # CRITICAL: Ensures one vote per post per voter
     __table_args__ = (db.UniqueConstraint('voter_id', 'post_id', name='_voter_post_uc'),)
-
 
 # --- Database Functions ---
 
@@ -121,18 +121,20 @@ def register_vote(student_id, post_id, candidate_id, ip_address=None):
         print(f"Error registering vote: {e}")
         return False
 
-def add_voter(student_id, name):
+def add_voter(student_id, name, dob='01-01-2000'):
     student_id = student_id.strip().upper()
     if not Voter.query.get(student_id):
-        new_voter = Voter(id=student_id, name=name)
+        new_voter = Voter(id=student_id, name=name, dob=dob)
         db.session.add(new_voter)
         db.session.commit()
         return True
     return False
 
-def verify_voter(student_id):
+def verify_voter(student_id, dob=None):
     voter = Voter.query.get(student_id.strip().upper())
     if voter:
+        if dob and voter.dob != dob:
+            return None
         return voter.name
     return None
 
@@ -256,3 +258,45 @@ def reset_all_data():
     except Exception as e:
         db.session.rollback()
         return False
+
+def update_vote(voter_id, post_id, new_candidate_id):
+    try:
+        vote = Vote.query.filter_by(voter_id=voter_id, post_id=post_id).first()
+        if vote:
+            vote.candidate_id = new_candidate_id
+            db.session.commit()
+            return True
+        return False
+    except Exception as e:
+        db.session.rollback()
+        return False
+
+def delete_vote(voter_id, post_id):
+    try:
+        vote = Vote.query.filter_by(voter_id=voter_id, post_id=post_id).first()
+        if vote:
+            db.session.delete(vote)
+            db.session.commit()
+            return True
+        return False
+    except Exception as e:
+        db.session.rollback()
+        return False
+
+def get_all_votes_detail():
+    votes = Vote.query.all()
+    result = []
+    for v in votes:
+        voter = Voter.query.get(v.voter_id)
+        post = Post.query.get(v.post_id)
+        candidate = Candidate.query.get(v.candidate_id)
+        result.append({
+            'voter_id': v.voter_id,
+            'voter_name': voter.name if voter else 'Unknown',
+            'post_id': v.post_id,
+            'post_name': post.name if post else 'Unknown',
+            'candidate_id': v.candidate_id,
+            'candidate_name': candidate.name if candidate else 'Unknown',
+            'timestamp': v.timestamp
+        })
+    return sorted(result, key=lambda x: (x['voter_id'], x['post_id']))

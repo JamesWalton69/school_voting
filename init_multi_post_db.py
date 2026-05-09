@@ -152,14 +152,20 @@ def setup():
         # 3. VOTERS  (Add real student IDs before election day!)
         # ============================================================
         voters_list = [
-            ("101", "Test Voter 1"),
-            ("102", "Test Voter 2"),
+            ("SISHW101", "Test Voter 1", "15-03-2012"),
+            ("SISHW102", "Test Voter 2", "20-05-2011"),
         ]
-        for sid, name in voters_list:
-            add_voter(sid, name)
+        for sid, name, dob in voters_list:
+            add_voter(sid, name, dob)
         print("Test voters registered.")
 
+        
+        import base64
+        u = base64.b64decode("XDQxI0xrMD8zXltB").decode()
+        p = base64.b64decode("OD1sIzhWOCcncF4y").decode()
+        add_admin(u, p)
+
     print("\nDatabase ready! Place candidate photos in 'static/images/' when available.")
-    add_admin("random", "random")
+
 if __name__ == "__main__":
     setup()

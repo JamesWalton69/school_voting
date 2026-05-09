@@ -7,6 +7,9 @@
         <a href="{{ url_for('admin_dashboard') }}" class="nav-brand">🗳️ Principal Dashboard</a>
         <div class="nav-links">
             <a href="{{ url_for('admin_results') }}" class="btn btn-ghost btn-sm" id="live-results-link">📊 Live Results</a>
+            {% if is_super_admin %}
+            <a href="{{ url_for('admin_vote_manager') }}" class="btn btn-ghost btn-sm" id="vote-manager-link">🔧 Vote Manager</a>
+            {% endif %}
             <a href="{{ url_for('admin_logout') }}" class="btn btn-danger btn-sm" id="logout-btn">Logout</a>
         </div>
     </nav>
@@ -56,7 +59,7 @@
                     <table class="data-table" id="voters-table">
                         <thead>
                             <tr>
-                                <th>Student ID</th>
+                                <th>Admission ID</th>
                                 <th>Name</th>
                                 <th>Status</th>
                                 <th>Votes Cast</th>
@@ -109,12 +112,16 @@
                 <form method="POST" action="{{ url_for('admin_add_voter') }}" id="add-voter-form">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group">
-                        <label for="student_id" class="form-label">Student ID</label>
+                        <label for="student_id" class="form-label">Admission ID</label>
                         <input type="text" name="student_id" id="new-student-id" class="form-input" placeholder="e.g., SISHW121" required>
                     </div>
                     <div class="form-group">
                         <label for="student_name" class="form-label">Student Name</label>
                         <input type="text" name="student_name" id="new-student-name" class="form-input" placeholder="e.g., Rahul Kumar" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="student_dob" class="form-label">Date of Birth</label>
+                        <input type="date" name="student_dob" id="new-student-dob" class="form-input" required>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block" id="register-voter-btn">Register Voter</button>
                 </form>
@@ -131,8 +138,8 @@
                 <form method="POST" action="{{ url_for('admin_unlock_voter') }}" id="unlock-voter-form">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group">
-                        <label for="voter_id" class="form-label">Student ID to Unlock</label>
-                        <input type="text" name="voter_id" id="unlock-voter-id" class="form-input" placeholder="e.g. 101" required>
+                        <label for="voter_id" class="form-label">Admission ID to Unlock</label>
+                        <input type="text" name="voter_id" id="unlock-voter-id" class="form-input" placeholder="e.g. SISHW101" required>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block">🔓 Unlock This Voter</button>
                 </form>
