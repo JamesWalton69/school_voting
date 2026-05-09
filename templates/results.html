@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Live Results - School Election 2026{% endblock %}
+
+{% block content %}
+<div class="page-wrapper dashboard-page">
+    <nav class="navbar">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-brand">🗳️ Principal Dashboard</a>
+        <div class="nav-links">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-ghost btn-sm">← Dashboard</a>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-danger btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 80px; max-width: 800px;">
+        
+        <!-- Post Selector -->
+        <div class="card card-glass fade-in" style="margin-bottom: 20px; padding: 20px;">
+            <form action="{{ url_for('admin_results') }}" method="GET" style="display: flex; gap: 10px; align-items: flex-end;">
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label for="post_id" class="form-label">Select Post to View Results</label>
+                    <select name="post_id" id="post_id" class="form-input" style="cursor: pointer; appearance: auto;">
+                        {% for post in posts %}
+                            <option value="{{ post.id }}" {% if selected_post and selected_post.id == post.id %}selected{% endif %}>
+                                {{ post.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">View Results</button>
+            </form>
+        </div>
+
+        {% if selected_post %}
+        <div class="card card-glass fade-in">
+            <div class="card-header" style="text-align: center;">
+                <h2 style="color: var(--accent-primary-hover); margin-bottom: 5px;">{{ selected_post.name }}</h2>
+                <p class="text-muted">Total Votes Cast: <strong>{{ total_votes }}</strong></p>
+            </div>
+
+            <!-- Winner Banner -->
+            {% if winner %}
+            <div class="winner-banner fade-in {% if is_tie %}tie{% endif %}">
+                {% if is_tie %}
+                <div class="winner-icon">🤝</div>
+                <h2>It's a Tie!</h2>
+                <p>{{ winner }}</p>
+                {% else %}
+                <div class="winner-icon">🏆</div>
+                <h2>Current Leader</h2>
+                <p class="winner-name">{{ winner }}</p>
+                <p class="winner-votes">{{ max_votes }} votes</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Results Chart -->
+            <div class="results-chart">
+                {% for res in results %}
+                <div class="result-row fade-in" style="animation-delay: {{ loop.index * 0.1 }}s">
+                    <div class="result-info">
+                        <span class="result-icon" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 50%; background: rgba(255,255,255,0.1); margin-right: 10px;">
+                            {% if res.name == 'NOTA' %}
+                                🚫
+                            {% elif res.image_url %}
+                                <img src="{{ url_for('static', filename='images/' + res.image_url) }}" 
+                                     alt="{{ res.name }}" 
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                👤
+                            {% endif %}
+                        </span>
+                        <span class="result-name">{{ res.name }}</span>
+                    </div>
+                    <div class="result-bar-wrap">
+                        <div class="result-bar result-bar-{{ loop.index }}" 
+                             style="width: {{ (res.votes / total_votes * 100) if total_votes > 0 else 0 }}%">
+                        </div>
+                    </div>
+                    <div class="result-stats">
+                        <span class="result-votes">{{ res.votes }}</span>
+                        <span class="result-pct">{{ "%.1f"|format(res.votes / total_votes * 100) if total_votes > 0 else "0.0" }}%</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card card-glass fade-in" style="text-align: center; padding: 40px;">
+            <p class="text-muted">Please select a post from the dropdown above.</p>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
